@@ -31,7 +31,7 @@ void ana(){
   TTreeReaderArray<float> jet_deepCSV(theReader, "jet_deepCSV");
   TTreeReaderValue<Int_t> jet_number(theReader, "jet_number");
 
-  TFile * output = new TFile(Form("histo_%s.root", filename.Data()),"recreate");
+  TFile * output = new TFile(Form("histo0_%s.root", filename.Data()),"recreate");
 
   TH1F * h_MET = new TH1F("h_MET","MET",240,0,240);
   TH1F * h_MET_step2 = new TH1F("h_MET_step2","MET",240,0,240);
@@ -57,10 +57,14 @@ void ana(){
     if( *channel == 0 && muon.Pt() > 20 && abs(muon.Eta()) < 2.1){
 
       float met = *MET;
-      h_MET->Fill(met, scale);
+     // h_MET->Fill(met, scale);
       
       int njet = *jet_number;
       h_njet->Fill(njet, scale);
+
+      if ( njet > 0){
+        h_MET->Fill(met, scale);
+        }
  
       if( njet > 3){
         h_MET_step2->Fill(met, scale);
