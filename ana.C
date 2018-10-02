@@ -29,13 +29,15 @@ void ana(){
   TTreeReaderArray<float> jet_phi(theReader, "jet_phi");
   TTreeReaderArray<float> jet_e(theReader, "jet_e");
   TTreeReaderArray<float> jet_deepCSV(theReader, "jet_deepCSV");
+  TTreeReaderArray<float> jet_JER_Nom(theReader, "jet_JER_Nom");
+  TTreeReaderArray<float> jet_SF_deepCSV_30(theReader, "jet_SF_deepCSV_30");
   TTreeReaderValue<Int_t> jet_number(theReader, "jet_number");
 
-  TFile * output = new TFile(Form("histo0_%s.root", filename.Data()),"recreate");
+  TFile * output = new TFile(Form("histo2_%s.root", filename.Data()),"recreate");
 
-  TH1F * h_MET = new TH1F("h_MET","MET",240,0,240);
-  TH1F * h_MET_step2 = new TH1F("h_MET_step2","MET",240,0,240);
-  TH1F * h_MET_step3 = new TH1F("h_MET_step3","MET",240,0,240);
+  TH1F * h_MET = new TH1F("h_MET","MET",24,0,240);
+  TH1F * h_MET_step2 = new TH1F("h_MET_step2","MET",24,0,240);
+  TH1F * h_MET_step3 = new TH1F("h_MET_step3","MET",24,0,240);
 //  TH1F * h_MET_step2 = new TH1F("h_MET_step2","h_MET_step2",120,0,120);
   TH1F * h_njet = new TH1F("h_njet","Jet Multiplicity",10,0,10);
   TH1F * h_nbjet_step2 = new TH1F("h_nbjet_step2","b Jet Multiplicity",10,0,10);
@@ -47,12 +49,21 @@ void ana(){
     muon.SetPtEtaPhiE( *lepton_pt, *lepton_eta, *lepton_phi, *lepton_e);
  
     TLorentzVector jet;
-    int nbjet = 0; 
+    int nbjet = 0;
+    int njet = 0; 
     for(int iJet=0; iJet<jet_pt.GetSize(); ++iJet){
       jet.SetPtEtaPhiE( jet_pt[iJet], jet_eta[iJet], jet_phi[iJet], jet_e[iJet] );
-      if (jet_deepCSV[iJet] > 0.8){
-        nbjet++;
+      
+      if (!data){
+       jet = jet*jet_SF_deepCSV_30[iJet]*jet_JER_Nom[iJet];  
       }
+  
+     if (jet_pt[iJet] > 30 && abs(jet_eta[iJet]) < 2.1){
+       njet++; 
+       if (jet_deepCSV[iJet] > 0.8){
+        nbjet++;
+       }
+     }
     }
     if( *channel == 0 && muon.Pt() > 20 && abs(muon.Eta()) < 2.1){
 
@@ -72,13 +83,11 @@ void ana(){
          if (nbjet > 1){
            h_MET_step3->Fill(met, scale);
          }
-      } 
+      }     
 
-       
-
-    }     
-
+   }
     nevents++;
+
   }
 
   //TCanvas *c_MET = new TCanvas("c_MET","c_MET",1);
